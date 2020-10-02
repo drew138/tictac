@@ -1,40 +1,42 @@
 package endpoints
 
 import (
-	"fmt"
+	"encoding/json"
+	"net/http"
 
-	"github.com/drew138/games/api/authentication"
-	"github.com/drew138/games/api/authorization"
-	"github.com/drew138/games/database"
-	"github.com/drew138/games/database/models"
-	"github.com/gofiber/fiber/v2"
+	"github.com/drew138/tictac/api/authentication"
+	"github.com/drew138/tictac/api/authorization"
+	"github.com/drew138/tictac/database"
+	"github.com/drew138/tictac/database/models"
 )
 
 // CreateUser add new user to database
-func CreateUser(c *fiber.Ctx) error {
-
-	if !HasJSONBody(c) {
-		return fmt.Errorf("Body does not contain JSON format")
-	}
+func CreateUser(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	var User models.User
-	if UnmarshalJSON(c, &User) {
-		return fmt.Errorf("Invalid user properties")
+	if err := UnmarshalJSON(r, &User); err != nil {
+		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error()})
+		w.WriteHeader(400)
+		return
 	}
 	validationError := authentication.ValidatePassword(User.Password)
 	if validationError != nil {
-		c.Status(400).Send([]byte(validationError.Error()))
-		return validationError
+		json.NewEncoder(w).Encode(map[string]string{"Error": validationError.Error()})
+		w.WriteHeader(400)
+		return
 	}
 	User.Password = authentication.HashGenerator([]byte(User.Password))
 	dbError := database.DBConn.Create(&User).Error
 	if dbError != nil {
-		c.Status(500).Send([]byte(dbError.Error()))
-		return dbError
+		json.NewEncoder(w).Encode(map[string]string{"Error": dbError.Error()})
+		w.WriteHeader(500)
+		return
 	}
 	tokenPair, err := authorization.GenerateJWT(&User)
 	if err != nil {
-		c.Status(500).Send([]byte(err.Error()))
-		return err
+		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error()})
+		w.WriteHeader(500)
+		return
 	}
 	userMap := map[string]interface{}{
 		"email":        User.Email,
@@ -44,7 +46,6 @@ func CreateUser(c *fiber.Ctx) error {
 		"accessToken":  tokenPair["accessToken"],
 		"refreshToken": tokenPair["refreshToken"],
 	}
-	c.Status(201)
-	c.JSON(userMap) // convert to json and send response
-	return nil
+	json.NewEncoder(w).Encode(userMap)
+	w.WriteHeader(201)
 }

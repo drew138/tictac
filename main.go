@@ -2,9 +2,12 @@ package main
 
 import (
 	"log"
+	"net/http"
 
-	"github.com/drew138/games/api"
-	"github.com/gofiber/fiber/v2"
+	// "github.com/drew138/tictac/database"
+
+	"github.com/drew138/tictac/api"
+	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
 
@@ -18,9 +21,8 @@ func loadEnv() {
 
 func main() {
 	loadEnv()
-	app := fiber.New()
-	api.ResgisterEndPoints(app)
-	app.Listen(":3000")
+	// database.AutoMigrateDB()
+	r := mux.NewRouter()
+	api.ResgisterEndPoints(&r)
+	http.ListenAndServe(":8000", r)
 }
-
-// https://docs.gofiber.io/ctx#format

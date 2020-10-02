@@ -3,7 +3,7 @@ package database
 import (
 	"fmt"
 
-	"github.com/drew138/games/database/models"
+	"github.com/drew138/tictac/database/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -16,7 +16,7 @@ func AutoMigrateDB() {
 		panic("Failed to establish connection to database")
 	}
 	fmt.Println("Established connection succesfully to database")
-	DBConn.AutoMigrate(&models.User{}, &models.Queries{}) // TODO add remaining models
+	DBConn.AutoMigrate(&models.User{}, &models.Game{}) // TODO add remaining models
 	fmt.Println("Database Migrated Succesfully")
 	// DBConn
 }

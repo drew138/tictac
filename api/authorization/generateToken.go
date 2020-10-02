@@ -6,7 +6,7 @@ import (
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/drew138/games/database/models"
+	"github.com/drew138/tictac/database/models"
 )
 
 // GenerateJWT return jwt token

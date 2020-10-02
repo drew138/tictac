@@ -3,18 +3,16 @@ package endpoints
 import (
 	"fmt"
 
-	"github.com/drew138/games/api/authentication"
-	"github.com/drew138/games/api/authorization"
-	"github.com/drew138/games/database"
-	"github.com/drew138/games/database/models"
+	"github.com/drew138/tictac/api/authentication"
+	"github.com/drew138/tictac/api/authorization"
+	"github.com/drew138/tictac/database"
+	"github.com/drew138/tictac/database/models"
 	"github.com/gofiber/fiber/v2"
 )
 
 // Login - Grant access and permissions by providing jwt
 func Login(c *fiber.Ctx) error {
-	if !HasJSONBody(c) {
-		return fmt.Errorf("Body does not contain JSON format")
-	}
+
 	user := new(models.User) // request user
 	if UnmarshalJSON(c, &user) {
 		return fmt.Errorf("Invalid user properties")

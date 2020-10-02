@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/drew138/games/database"
-	"github.com/drew138/games/database/models"
+	"github.com/drew138/tictac/database"
+	"github.com/drew138/tictac/database/models"
 )
 
 // RefreshToken - generate a new pair authorization JWT if user ID exists
