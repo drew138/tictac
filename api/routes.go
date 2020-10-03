@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/drew138/tictac/api/endpoints"
+	"github.com/drew138/tictac/api/websockets"
 	"github.com/gorilla/mux"
 )
 
@@ -9,13 +10,14 @@ import (
 func RegisterRoutes(r *mux.Router) {
 	// GET Endpoints
 
-	// app.Get("/")
 	// POST Endpoints
 	r.HandleFunc("/api/v1/register", endpoints.CreateUser).Methods("POST")
 	r.HandleFunc("/api/v1/login", endpoints.Login).Methods("POST")
 	r.HandleFunc("/api/v1/refresh", endpoints.RefreshJWT).Methods("POST")
-	//PUT Endpoints
+	// PUT Endpoints
 
-	//PATCH Endpoints
+	// PATCH Endpoints
 
+	// Websocket Endpoints
+	r.HandleFunc("/ws/v1/tictactoe", websockets.HandleConnection)
 }
