@@ -18,5 +18,4 @@ func AutoMigrateDB() {
 	fmt.Println("Established connection succesfully to database")
 	DBConn.AutoMigrate(&models.User{}, &models.Game{}) // TODO add remaining models
 	fmt.Println("Database Migrated Succesfully")
-	// DBConn
 }
