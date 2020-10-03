@@ -13,16 +13,16 @@ func RefreshJWT(w http.ResponseWriter, r *http.Request) {
 	rToken := strings.Split(r.Header.Get("Authorization"), " ")[1]
 	parsedRToken, err := authorization.ParseJWT(rToken)
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error()})
 		w.WriteHeader(401)
+		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error()})
 		return
 	}
 	tokenPair, err := authorization.RefreshToken(parsedRToken)
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error()})
 		w.WriteHeader(401)
+		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error()})
 		return
 	}
-	json.NewEncoder(w).Encode(tokenPair)
 	w.WriteHeader(201)
+	json.NewEncoder(w).Encode(tokenPair)
 }

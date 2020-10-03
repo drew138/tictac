@@ -14,38 +14,38 @@ import (
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var User models.User
-	if err := UnmarshalJSON(r, &User); err != nil {
-		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error()})
+	if err := json.NewDecoder(r.Body).Decode(&User); err != nil {
 		w.WriteHeader(400)
+		json.NewEncoder(w).Encode(&map[string]string{"Error": err.Error()})
 		return
 	}
 	validationError := authentication.ValidatePassword(User.Password)
 	if validationError != nil {
-		json.NewEncoder(w).Encode(map[string]string{"Error": validationError.Error()})
 		w.WriteHeader(400)
+		json.NewEncoder(w).Encode(&map[string]string{"Error": validationError.Error()})
 		return
 	}
 	User.Password = authentication.HashGenerator([]byte(User.Password))
 	dbError := database.DBConn.Create(&User).Error
 	if dbError != nil {
-		json.NewEncoder(w).Encode(map[string]string{"Error": dbError.Error()})
 		w.WriteHeader(500)
+		json.NewEncoder(w).Encode(&map[string]string{"Error": dbError.Error()})
 		return
 	}
 	tokenPair, err := authorization.GenerateJWT(&User)
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error()})
 		w.WriteHeader(500)
+		json.NewEncoder(w).Encode(&map[string]string{"Error": err.Error()})
 		return
 	}
 	userMap := map[string]interface{}{
 		"email":        User.Email,
 		"name":         User.Name,
 		"surname":      User.Surname,
-		"isAdmin":      User.IsAdmin, //TODO remove this field
+		"isAdmin":      User.IsAdmin,
 		"accessToken":  tokenPair["accessToken"],
 		"refreshToken": tokenPair["refreshToken"],
 	}
-	json.NewEncoder(w).Encode(userMap)
 	w.WriteHeader(201)
+	json.NewEncoder(w).Encode(&userMap)
 }
