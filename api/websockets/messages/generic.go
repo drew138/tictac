@@ -1,6 +1,6 @@
 package messages
 
 // Message is main format for messages
-var Message struct {
+type Message struct {
 	Action string `json:"action"`
 }

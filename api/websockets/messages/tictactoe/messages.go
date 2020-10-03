@@ -1,9 +1,10 @@
-package messages
+package tictactoe
 
 import (
-	genericMessages "github.com/Drew138/tictac/api/websockets/messages"
+	"github.com/drew138/tictac/api/websockets/messages"
 )
 
-var message = {
-	Message genericMessages.Message
+// Message is base message for tictactoe messaging
+type Message struct {
+	messages.Message
 }

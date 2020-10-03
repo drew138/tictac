@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	messages "github.com/drew138/tictac/api/websockets/messages/tictactoe"
 	"github.com/gorilla/websocket"
 )
 
@@ -26,7 +27,7 @@ func HandleConnection(w http.ResponseWriter, r *http.Request) {
 	go handleMessages(conn)
 }
 
-func handleMessages(conn *websocket.Conn) {
+func handleMessages(conn *websocket.Conn) error {
 	log.Println("Websocket connection established.")
 	defer func() {
 		if err := conn.Close(); err != nil {
@@ -36,9 +37,13 @@ func handleMessages(conn *websocket.Conn) {
 		}
 	}()
 	for {
-		if err := u.Conn.ReadJSON(&m); err != nil {
-
+		var newMessage messages.Message
+		if err := conn.ReadJSON(&newMessage); err != nil {
+			log.Fatalln("Error when reading websocket message: ", err.Error())
+			return err
 		}
+		j, _ := json.Marshal(newMessage)
+		log.Println("Message Recieved: ", string(j))
 	}
 }
 
