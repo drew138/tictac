@@ -5,8 +5,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// ResgisterEndPoints applies specified routes to fiber app
-func ResgisterEndPoints(r *mux.Router) {
+// ResgisterRoutes applies specified routes to fiber app
+func ResgisterRoutes(r *mux.Router) {
 	// GET Endpoints
 
 	// app.Get("/")

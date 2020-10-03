@@ -23,6 +23,6 @@ func main() {
 	loadEnv()
 	// database.AutoMigrateDB()
 	r := mux.NewRouter()
-	api.ResgisterEndPoints(r)
+	api.ResgisterRoutes(r)
 	log.Fatal(http.ListenAndServe("127.0.0.1:8080", r))
 }
