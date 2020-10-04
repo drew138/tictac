@@ -4,9 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	// "github.com/drew138/tictac/database"
-
 	"github.com/drew138/tictac/api"
+	"github.com/drew138/tictac/database"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
@@ -21,7 +20,7 @@ func loadEnv() {
 
 func main() {
 	loadEnv()
-	// database.AutoMigrateDB()
+	database.AutoMigrateDB()
 	r := mux.NewRouter()
 	api.RegisterRoutes(r)
 	log.Println("Server started, running on port 8080.")

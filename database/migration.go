@@ -12,6 +12,7 @@ import (
 func AutoMigrateDB() {
 	var err error
 	DBConn, err = gorm.Open(postgres.Open(GetDSN()), &gorm.Config{})
+	// DBConn, err = gorm.Open("postgres", GetDSN())
 	if err != nil {
 		panic("Failed to establish connection to database")
 	}
