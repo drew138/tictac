@@ -3,14 +3,19 @@ package endpoints
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
 
 	"github.com/drew138/tictac/api/authorization"
 )
 
 // RefreshJWT - function handle to refresh jwts
 func RefreshJWT(w http.ResponseWriter, r *http.Request) {
-	rToken := strings.Split(r.Header.Get("Authorization"), " ")[1]
+	w.Header().Set("Content-Type", "application/json")
+	rToken := r.Header["Authorization"][0]
+	if rToken == "" {
+		w.WriteHeader(400)
+		json.NewEncoder(w).Encode(map[string]string{"Error": "Validation Error"})
+		return
+	}
 	parsedRToken, err := authorization.ParseJWT(rToken)
 	if err != nil {
 		w.WriteHeader(401)
