@@ -10,13 +10,22 @@ import (
 // RefreshJWT - function handle to refresh jwts
 func RefreshJWT(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	rToken := r.Header["Authorization"][0]
+
+	var rToken string
+	invalidPermissions := map[string]string{"Error": "Not authorized"}
+	if r.Header["Authorization"] != nil {
+		rToken = r.Header["Authorization"][0]
+	} else {
+		w.WriteHeader(401)
+		json.NewEncoder(w).Encode(&invalidPermissions)
+		return
+	}
 	if rToken == "" {
 		w.WriteHeader(400)
 		json.NewEncoder(w).Encode(map[string]string{"Error": "Validation Error"})
 		return
 	}
-	parsedRToken, err := authorization.ParseJWT(rToken)
+	parsedRToken, err := authorization.ParseJWT(rToken, true)
 	if err != nil {
 		w.WriteHeader(401)
 		json.NewEncoder(w).Encode(map[string]string{"Error": err.Error()})

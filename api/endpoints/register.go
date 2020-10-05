@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/drew138/tictac/api/status"
+
 	"github.com/dgrijalva/jwt-go"
 
 	"github.com/drew138/tictac/api/authentication"
@@ -18,8 +20,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	var User models.User
 	if err := json.NewDecoder(r.Body).Decode(&User); err != nil {
-		w.WriteHeader(400)
-		json.NewEncoder(w).Encode(&map[string]string{"Error": err.Error()})
+		status.RespondStatus(w, 400, err)
 		return
 	}
 	validationError := authentication.ValidatePassword(User.Password)
@@ -31,20 +32,32 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	if User.IsAdmin {
 		invalidPermissions := map[string]string{"Error": "Not authorized"}
-		token := r.Header["Authorization"][0]
+		var token string
+		if r.Header["Authorization"] != nil {
+			token = r.Header["Authorization"][0]
+		} else {
+			w.WriteHeader(401)
+			json.NewEncoder(w).Encode(&invalidPermissions)
+			return
+		}
 		if token == "" {
 			w.WriteHeader(401)
 			json.NewEncoder(w).Encode(&invalidPermissions)
 			return
 		}
-		parsedToken, _ := authorization.ParseJWT(token)
+		parsedToken, _ := authorization.ParseJWT(token, false)
+		if parsedToken == nil {
+			w.WriteHeader(401)
+			json.NewEncoder(w).Encode(&invalidPermissions)
+			return
+		}
 		claims, ok := parsedToken.Claims.(jwt.MapClaims)
 		if !(parsedToken.Valid && ok) {
 			w.WriteHeader(401)
 			json.NewEncoder(w).Encode(&invalidPermissions)
 			return
 		}
-		if claims["isAdmin"] != true {
+		if claims["IsAdmin"] != true {
 			w.WriteHeader(401)
 			json.NewEncoder(w).Encode(&invalidPermissions)
 			return
@@ -58,19 +71,19 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(&map[string]string{"Error": dbError.Error()})
 		return
 	}
-	tokenPair, err := authorization.GenerateJWT(&User)
+	tokenPair, err := authorization.GenerateJWTS(&User)
 	if err != nil {
 		w.WriteHeader(500)
 		json.NewEncoder(w).Encode(&map[string]string{"Error": err.Error()})
 		return
 	}
 	userMap := map[string]interface{}{
-		"email":        User.Email,
-		"name":         User.Name,
-		"surname":      User.Surname,
-		"isAdmin":      User.IsAdmin,
-		"accessToken":  tokenPair["accessToken"],
-		"refreshToken": tokenPair["refreshToken"],
+		"Email":        User.Email,
+		"Name":         User.Name,
+		"Surname":      User.Surname,
+		"IsAdmin":      User.IsAdmin,
+		"AccessToken":  tokenPair["accessToken"],
+		"RefreshToken": tokenPair["refreshToken"],
 	}
 	w.WriteHeader(201)
 	json.NewEncoder(w).Encode(&userMap)

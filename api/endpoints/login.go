@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/drew138/tictac/api/authentication"
@@ -19,6 +20,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(&map[string]string{"Error": err.Error()})
 		return
 	}
+	fmt.Println(user.Email)
 	var User models.User // user in database
 	database.DBConn.Where("email = ?", user.Email).First(&User)
 	err := authentication.AssertPassword(User.Password, []byte(user.Password))
@@ -27,7 +29,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(&map[string]string{"Error": err.Error()})
 		return
 	}
-	tokenPair, err := authorization.GenerateJWT(user)
+	tokenPair, err := authorization.GenerateJWTS(&User)
 	if err != nil {
 		w.WriteHeader(401)
 		json.NewEncoder(w).Encode(&map[string]string{"Error": err.Error()})

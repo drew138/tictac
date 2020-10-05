@@ -15,8 +15,8 @@ func RefreshToken(token *jwt.Token) (map[string]string, error) {
 	if ok && token.Valid {
 		var User models.User // user in database
 		database.DBConn.First(&User, claims["ID"])
-		tokenPair, err := GenerateJWT(&User)
+		tokenPair, err := GenerateJWTS(&User)
 		return tokenPair, err
 	}
-	return map[string]string{}, fmt.Errorf("Error: Inavlid token")
+	return map[string]string{}, fmt.Errorf("Invalid token")
 }
