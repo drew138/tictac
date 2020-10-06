@@ -4,12 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/drew138/tictac/api/status"
-
 	"github.com/dgrijalva/jwt-go"
-
 	"github.com/drew138/tictac/api/authentication"
 	"github.com/drew138/tictac/api/authorization"
+	"github.com/drew138/tictac/api/status"
 	"github.com/drew138/tictac/database"
 	"github.com/drew138/tictac/database/models"
 )
