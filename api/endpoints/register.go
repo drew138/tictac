@@ -15,7 +15,6 @@ import (
 // CreateUser add new user to database
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-
 	var User models.User
 	if err := json.NewDecoder(r.Body).Decode(&User); err != nil {
 		status.RespondStatus(w, 400, err)
@@ -23,56 +22,45 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	validationError := authentication.ValidatePassword(User.Password)
 	if validationError != nil {
-		w.WriteHeader(400)
-		json.NewEncoder(w).Encode(&map[string]string{"Error": validationError.Error()})
+		status.RespondStatus(w, 400, validationError)
 		return
 	}
-
 	if User.IsAdmin {
-		invalidPermissions := map[string]string{"Error": "Not authorized"}
 		var token string
 		if r.Header["Authorization"] != nil {
 			token = r.Header["Authorization"][0]
 		} else {
-			w.WriteHeader(401)
-			json.NewEncoder(w).Encode(&invalidPermissions)
+			status.RespondStatus(w, 401, nil)
 			return
 		}
 		if token == "" {
-			w.WriteHeader(401)
-			json.NewEncoder(w).Encode(&invalidPermissions)
+			status.RespondStatus(w, 401, nil)
 			return
 		}
 		parsedToken, _ := authorization.ParseJWT(token, false)
 		if parsedToken == nil {
-			w.WriteHeader(401)
-			json.NewEncoder(w).Encode(&invalidPermissions)
+			status.RespondStatus(w, 401, nil)
 			return
 		}
 		claims, ok := parsedToken.Claims.(jwt.MapClaims)
 		if !(parsedToken.Valid && ok) {
-			w.WriteHeader(401)
-			json.NewEncoder(w).Encode(&invalidPermissions)
+			status.RespondStatus(w, 401, nil)
 			return
 		}
 		if claims["IsAdmin"] != true {
-			w.WriteHeader(401)
-			json.NewEncoder(w).Encode(&invalidPermissions)
+			status.RespondStatus(w, 401, nil)
 			return
 		}
 	}
-
 	User.Password = authentication.HashGenerator([]byte(User.Password))
 	dbError := database.DBConn.Create(&User).Error
 	if dbError != nil {
-		w.WriteHeader(500)
-		json.NewEncoder(w).Encode(&map[string]string{"Error": dbError.Error()})
+		status.RespondStatus(w, 500, dbError)
 		return
 	}
 	tokenPair, err := authorization.GenerateJWTS(&User)
 	if err != nil {
-		w.WriteHeader(500)
-		json.NewEncoder(w).Encode(&map[string]string{"Error": err.Error()})
+		status.RespondStatus(w, 500, err)
 		return
 	}
 	userMap := map[string]interface{}{

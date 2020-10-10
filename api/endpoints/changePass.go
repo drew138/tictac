@@ -4,9 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/drew138/tictac/api/authentication"
-
 	"github.com/dgrijalva/jwt-go"
+	"github.com/drew138/tictac/api/authentication"
 	"github.com/drew138/tictac/api/authorization"
 	"github.com/drew138/tictac/api/status"
 	"github.com/drew138/tictac/database"
@@ -35,9 +34,7 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	newPass := mux.Vars(r)["newPassword"]
-
 	hashedNewPass := authentication.HashGenerator([]byte(newPass))
-
 	if hashedNewPass == "" {
 		status.RespondStatus(w, 500, nil)
 	}

@@ -2,11 +2,11 @@ package endpoints
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/drew138/tictac/api/authentication"
 	"github.com/drew138/tictac/api/authorization"
+	"github.com/drew138/tictac/api/status"
 	"github.com/drew138/tictac/database"
 	"github.com/drew138/tictac/database/models"
 )
@@ -16,23 +16,19 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	user := new(models.User) // request user
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		w.WriteHeader(400)
-		json.NewEncoder(w).Encode(&map[string]string{"Error": err.Error()})
+		status.RespondStatus(w, 400, err)
 		return
 	}
-	fmt.Println(user.Email)
 	var User models.User // user in database
 	database.DBConn.Where("email = ?", user.Email).First(&User)
 	err := authentication.AssertPassword(User.Password, []byte(user.Password))
 	if err != nil {
-		w.WriteHeader(401)
-		json.NewEncoder(w).Encode(&map[string]string{"Error": err.Error()})
+		status.RespondStatus(w, 401, err)
 		return
 	}
 	tokenPair, err := authorization.GenerateJWTS(&User)
 	if err != nil {
-		w.WriteHeader(401)
-		json.NewEncoder(w).Encode(&map[string]string{"Error": err.Error()})
+		status.RespondStatus(w, 401, err)
 		return
 	}
 	w.WriteHeader(201)
