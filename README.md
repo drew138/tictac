@@ -17,7 +17,7 @@ DB_USERNAME=yourDatabaseUsername
 DB_PASSWORD=yourDatabasePassword
 DB_NAME=yourDatabaseName
 DB_HOST=yourDatabaseHost
-DB_PORT=yourDatabaseHost
+DB_PORT=yourDatabasePort
 JWT_SECRET_KEY=randomJWTSecretKey
 JWT_REFRESH_SECRET_KEY=anotherRandomJWTSecretKey
 ```
