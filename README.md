@@ -10,7 +10,7 @@ This project implements environment variables to handle sensitive information an
 
 ### Recommended .env file
 
-Users of this repository must be way that a .env file is enforced, and its structure must contain at least the following variables:
+Users of this repository must be wary that a .env file is enforced, and its structure must contain at least the following variables:
 
 ```
 DB_USERNAME=yourDatabaseUsername
