@@ -5,9 +5,9 @@ import (
 	"net/http"
 )
 
-var validationError string = "Validation Error"
-var serverError string = "Internal Server Error"
-var authorizationError string = "Not Authorized"
+const validationError string = "Validation Error"
+const serverError string = "Internal Server Error"
+const authorizationError string = "Not Authorized"
 
 // RespondStatus -
 func RespondStatus(w http.ResponseWriter, code int, err error) {
