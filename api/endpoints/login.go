@@ -14,19 +14,19 @@ import (
 // Login - Grant access and permissions by providing jwt
 func Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	user := new(models.User) // request user
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+	var requestUser models.User // user struct containing information provided by the request
+	if err := json.NewDecoder(r.Body).Decode(&requestUser); err != nil {
 		status.RespondStatus(w, 400, err)
 		return
 	}
-	var User models.User // user in database
-	database.DBConn.Where("email = ?", user.Email).First(&User)
-	err := authentication.AssertPassword(User.Password, []byte(user.Password))
+	var databaseUser models.User // user struct containing information found in database
+	database.DBConn.Where("email = ?", requestUser.Email).First(&databaseUser)
+	err := authentication.AssertPassword(databaseUser.Password, []byte(requestUser.Password))
 	if err != nil {
 		status.RespondStatus(w, 401, err)
 		return
 	}
-	tokenPair, err := authorization.GenerateJWTS(&User)
+	tokenPair, err := authorization.GenerateJWTS(&databaseUser)
 	if err != nil {
 		status.RespondStatus(w, 401, err)
 		return
