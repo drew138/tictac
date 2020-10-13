@@ -1,4 +1,4 @@
-# TICTAC
+# TICTAC Website API
 
 ## Installation
 
