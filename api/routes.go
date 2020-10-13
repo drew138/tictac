@@ -17,7 +17,7 @@ func RegisterRoutes(r *mux.Router) {
 	// PUT Endpoints
 
 	// PATCH Endpoints
-	r.HandleFunc("/api/v1/changepass/{newPassword:}", endpoints.ChangePassword).Methods("PATCH")
+	r.HandleFunc("/api/v1/changepass/", endpoints.ChangePassword).Methods("PATCH")
 	// Websocket Endpoints
 	r.HandleFunc("/ws/v1/tictactoe", websockets.HandleConnection)
 }
