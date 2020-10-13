@@ -10,7 +10,6 @@ import (
 	"github.com/drew138/tictac/api/status"
 	"github.com/drew138/tictac/database"
 	"github.com/drew138/tictac/database/models"
-	"github.com/gorilla/mux"
 )
 
 // ChangePassword - change password for a given user
@@ -33,7 +32,11 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) {
 		status.RespondStatus(w, 401, nil)
 		return
 	}
-	newPass := mux.Vars(r)["newPassword"]
+	var newPass string
+	if err := json.NewDecoder(r.Body).Decode(&newPass); err != nil {
+		status.RespondStatus(w, 400, err)
+		return
+	}
 	hashedNewPass := authentication.HashGenerator([]byte(newPass))
 	if hashedNewPass == "" {
 		status.RespondStatus(w, 500, nil)
@@ -49,7 +52,7 @@ func ChangePassword(w http.ResponseWriter, r *http.Request) {
 		status.RespondStatus(w, 500, err)
 		return
 	}
-	w.WriteHeader(201)
+	w.WriteHeader(200)
 	json.NewEncoder(w).Encode(tokenPair)
 }
 
