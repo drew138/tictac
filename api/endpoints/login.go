@@ -6,6 +6,7 @@ import (
 
 	"github.com/drew138/tictac/api/authentication"
 	"github.com/drew138/tictac/api/authorization"
+	"github.com/drew138/tictac/api/status"
 	"github.com/drew138/tictac/database"
 	"github.com/drew138/tictac/database/models"
 )
@@ -13,24 +14,21 @@ import (
 // Login - Grant access and permissions by providing jwt
 func Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	user := new(models.User) // request user
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		w.WriteHeader(400)
-		json.NewEncoder(w).Encode(&map[string]string{"Error": err.Error()})
+	var requestUser models.User // user struct containing information provided by the request
+	if err := json.NewDecoder(r.Body).Decode(&requestUser); err != nil {
+		status.RespondStatus(w, 400, err)
 		return
 	}
-	var User models.User // user in database
-	database.DBConn.Where("email = ?", user.Email).First(&User)
-	err := authentication.AssertPassword(User.Password, []byte(user.Password))
+	var databaseUser models.User // user struct containing information found in database
+	database.DBConn.Where("email = ?", requestUser.Email).First(&databaseUser)
+	err := authentication.AssertPassword(databaseUser.Password, []byte(requestUser.Password))
 	if err != nil {
-		w.WriteHeader(401)
-		json.NewEncoder(w).Encode(&map[string]string{"Error": err.Error()})
+		status.RespondStatus(w, 401, err)
 		return
 	}
-	tokenPair, err := authorization.GenerateJWT(user)
+	tokenPair, err := authorization.GenerateJWTS(&databaseUser)
 	if err != nil {
-		w.WriteHeader(401)
-		json.NewEncoder(w).Encode(&map[string]string{"Error": err.Error()})
+		status.RespondStatus(w, 401, err)
 		return
 	}
 	w.WriteHeader(201)
