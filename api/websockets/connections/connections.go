@@ -33,9 +33,6 @@ func (c *Connections) startConnectionsWorker() {
 			delete(c.connectedUsers, id)
 			log.Println("Removed user", id, "from connection pool")
 			break
-		default:
-			log.Println("Unrecognized message sent to connection worker")
-			break
 		}
 	}
 }
