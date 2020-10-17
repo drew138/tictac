@@ -21,9 +21,11 @@ func loadEnv() {
 
 func main() {
 	var dependencies struct{}
+	// Load dependencies
 	loadEnv()
 	database.AutoMigrateDB()
 	dependencies.WebsocketConnections = connections.StartConnectionTracking()
+	// Mount services
 	r := mux.NewRouter()
 	api.RegisterRoutes(r, &dependencies)
 	log.Println("Server started, running on port 8080.")
