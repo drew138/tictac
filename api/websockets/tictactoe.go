@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/drew138/tictac/api/websockets/connections"
+
 	messages "github.com/drew138/tictac/api/websockets/messages/tictactoe"
 	"github.com/gorilla/websocket"
 )
@@ -17,17 +19,17 @@ var upgrader = websocket.Upgrader{
 }
 
 // HandleConnection handles initial websocket connection
-func HandleConnection(w http.ResponseWriter, r *http.Request) {
+func HandleConnection(w http.ResponseWriter, r *http.Request, c connections.Connections) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Fatal("Error upgrading websocket connection: ", err.Error())
 		w.WriteHeader(400)
 		json.NewEncoder(w).Encode(&map[string]string{"Error": err.Error()})
 	}
-	go handleMessages(conn)
+	go handleMessages(conn, &c)
 }
 
-func handleMessages(conn *websocket.Conn) error {
+func handleMessages(conn *websocket.Conn, c *connections.Connections) error {
 	log.Println("Websocket connection established.")
 	defer func() {
 		if err := conn.Close(); err != nil {
