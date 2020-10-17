@@ -33,6 +33,7 @@ func handleMessages(conn *websocket.Conn, c *connections.Connections) error {
 	log.Println("Websocket connection established.")
 	defer func() {
 		if err := conn.Close(); err != nil {
+			// TODO: Remove UserID from connection pool
 			log.Fatalln("Failed to close websocket connection: ", err.Error())
 		} else {
 			log.Println("Websocket connection closed.")

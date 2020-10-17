@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/drew138/tictac/dependencies"
 	"log"
 	"net/http"
+
+	"github.com/drew138/tictac/dependencies"
 
 	"github.com/drew138/tictac/api"
 	"github.com/drew138/tictac/api/websockets/connections"
@@ -21,7 +22,7 @@ func loadEnv() {
 }
 
 func main() {
-	var dependencies dependencies.Dependencies{}
+	var dependencies dependencies.Dependencies
 	// Load dependencies
 	loadEnv()
 	database.AutoMigrateDB()
