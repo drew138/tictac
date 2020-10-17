@@ -3,13 +3,15 @@ package api
 import (
 	"net/http"
 
+	"github.com/drew138/tictac/dependencies"
+
 	"github.com/drew138/tictac/api/endpoints"
 	"github.com/drew138/tictac/api/websockets"
 	"github.com/gorilla/mux"
 )
 
 // RegisterRoutes applies specified routes to fiber app
-func RegisterRoutes(r *mux.Router, dependencies *struct{}) {
+func RegisterRoutes(r *mux.Router, dependencies *dependencies.Dependencies) {
 	// GET Endpoints
 
 	// POST Endpoints

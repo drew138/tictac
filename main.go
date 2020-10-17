@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/drew138/tictac/dependencies"
 	"log"
 	"net/http"
 
@@ -20,7 +21,7 @@ func loadEnv() {
 }
 
 func main() {
-	var dependencies struct{}
+	var dependencies dependencies.Dependencies{}
 	// Load dependencies
 	loadEnv()
 	database.AutoMigrateDB()

@@ -19,14 +19,14 @@ var upgrader = websocket.Upgrader{
 }
 
 // HandleConnection handles initial websocket connection
-func HandleConnection(w http.ResponseWriter, r *http.Request, c connections.Connections) {
+func HandleConnection(w http.ResponseWriter, r *http.Request, c *connections.Connections) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Fatal("Error upgrading websocket connection: ", err.Error())
 		w.WriteHeader(400)
 		json.NewEncoder(w).Encode(&map[string]string{"Error": err.Error()})
 	}
-	go handleMessages(conn, &c)
+	go handleMessages(conn, c)
 }
 
 func handleMessages(conn *websocket.Conn, c *connections.Connections) error {
