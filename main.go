@@ -9,22 +9,14 @@ import (
 	"github.com/drew138/tictac/api"
 	"github.com/drew138/tictac/api/websockets/connections"
 	"github.com/drew138/tictac/database"
+	"github.com/drew138/tictac/environment"
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
 )
-
-func loadEnv() {
-	err := godotenv.Load(".env")
-
-	if err != nil {
-		log.Fatalf("Error loading .env file")
-	}
-}
 
 func main() {
 	var dependencies dependencies.Dependencies
 	// Load dependencies
-	loadEnv()
+	environment.LoadEnv()
 	database.AutoMigrateDB()
 	dependencies.WebsocketConnections = connections.StartConnectionTracking()
 	// Mount services
