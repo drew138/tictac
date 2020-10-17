@@ -7,4 +7,6 @@ import (
 // Message is base message for tictactoe messaging
 type Message struct {
 	messages.Message
+	UserID string `json:"userID"`
+	RoomID string `json:"roomID"`
 }

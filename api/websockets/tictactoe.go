@@ -46,6 +46,17 @@ func handleMessages(conn *websocket.Conn, c *connections.Connections) error {
 		}
 		j, _ := json.Marshal(newMessage)
 		log.Println("Message Recieved: ", string(j))
+		switch newMessage.Action {
+		case "connect":
+			c.Connect <- newMessage.UserID
+			break
+		case "disconnect":
+			c.Disconnect <- newMessage.UserID
+			break
+		default:
+			log.Println("Unknown message recieved: ", string(j))
+			break
+		}
 	}
 }
 
