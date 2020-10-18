@@ -1,13 +1,17 @@
 package api
 
 import (
+	"net/http"
+
+	"github.com/drew138/tictac/dependencies"
+
 	"github.com/drew138/tictac/api/endpoints"
 	"github.com/drew138/tictac/api/websockets"
 	"github.com/gorilla/mux"
 )
 
 // RegisterRoutes applies specified routes to fiber app
-func RegisterRoutes(r *mux.Router) {
+func RegisterRoutes(r *mux.Router, dependencies *dependencies.Dependencies) {
 	// GET Endpoints
 
 	// POST Endpoints
@@ -19,5 +23,7 @@ func RegisterRoutes(r *mux.Router) {
 	// PATCH Endpoints
 	r.HandleFunc("/api/v1/changepass/", endpoints.ChangePassword).Methods("PATCH")
 	// Websocket Endpoints
-	r.HandleFunc("/ws/v1/tictactoe", websockets.HandleConnection)
+	r.HandleFunc("/ws/v1/tictactoe", func(w http.ResponseWriter, r *http.Request) {
+		websockets.HandleConnection(w, r, dependencies.WebsocketConnections)
+	})
 }
