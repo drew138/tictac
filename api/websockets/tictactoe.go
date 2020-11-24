@@ -2,7 +2,6 @@ package websockets
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -18,17 +17,13 @@ const (
 	writeWait = 10 * time.Second
 
 	// Time allowed to read the next pong message from the peer.
-	pongWait = 10 * time.Second
+	pongWait = 60 * time.Second
 
 	// Send pings to peer with this period. Must be less than pongWait.
 	pingPeriod = (pongWait * 9) / 10
 
 	// Maximum message size allowed from peer.
 	maxMessageSize = 512
-)
-
-var (
-	newline = []byte{'\n'}
 )
 
 // Upgrader
@@ -47,21 +42,18 @@ func HandleConnection(w http.ResponseWriter, r *http.Request, c *connections.Con
 		json.NewEncoder(w).Encode(&map[string]string{"Error": err.Error()})
 	}
 	user := &connections.ConnectedUser{
-		UserID:    ksuid.New().String(),
-		Conn:      conn,
-		SendQueue: make(chan *messages.Message),
+		UserID: ksuid.New().String(),
+		Conn:   conn,
 	}
 	c.Connect <- user
 	go handleMessages(user, c)
-	go sendMessagesWorker(user, c)
-	log.Println("Websocket connection established.")
 }
 
 func handleMessages(user *connections.ConnectedUser, c *connections.Connections) {
-	userID := user.UserID
+	log.Println("Websocket connection established.")
+	// userID := user.UserID
 	conn := user.Conn
 	conn.SetReadLimit(maxMessageSize)
-	// TODO: Investigate ping/pong system
 	conn.SetReadDeadline(time.Now().Add(pongWait))
 	conn.SetPongHandler(func(string) error { conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	defer func() {
@@ -78,82 +70,14 @@ func handleMessages(user *connections.ConnectedUser, c *connections.Connections)
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("Unexpected websocket close: %v", err)
 			}
-			log.Printf("Unexpected message format: %v", err)
 			break
 		}
 		j, _ := json.Marshal(newMessage)
 		log.Println("Message Recieved: ", string(j))
 		switch newMessage.Action {
-		case "privateMessage":
-			otherUser := c.GetConnectedUser(newMessage.RoomID)
-			if otherUser != nil {
-				outMsg := &messages.Message{
-					Action:      "privateMessage",
-					RecipientID: otherUser.UserID,
-					SenderID:    userID,
-					Body:        newMessage.Body,
-				}
-				otherUser.SendQueue <- outMsg
-			} else {
-				outMsg := &messages.Message{
-					Action: "error",
-					Body:   "User is offline",
-				}
-				user.SendQueue <- outMsg
-			}
 		default:
 			log.Println("Unknown message recieved: ", string(j))
 			break
-		}
-	}
-}
-
-func sendMessagesWorker(user *connections.ConnectedUser, c *connections.Connections) {
-	conn := user.Conn
-	ticker := time.NewTicker(pingPeriod)
-	defer func() {
-		ticker.Stop()
-		conn.Close()
-	}()
-	for {
-		select {
-		case message, ok := <-user.SendQueue:
-			conn.SetWriteDeadline(time.Now().Add(writeWait))
-			if !ok {
-				conn.WriteMessage(websocket.CloseMessage, []byte{})
-				return
-			}
-
-			w, err := conn.NextWriter(websocket.TextMessage)
-			if err != nil {
-				return
-			}
-			messageJSON, err := json.Marshal(*message)
-			if err != nil {
-				log.Printf("Error parsing JSON: %v", err)
-			}
-			w.Write(messageJSON)
-
-			// Add queued chat messages to the current websocket message.
-			n := len(user.SendQueue)
-			for i := 0; i < n; i++ {
-				w.Write(newline)
-				newMessage, err := json.Marshal(<-user.SendQueue)
-				if err != nil {
-					log.Printf("Error parsing JSON: %v", err)
-				}
-				w.Write(newMessage)
-			}
-
-			if err := w.Close(); err != nil {
-				return
-			}
-		case <-ticker.C:
-			conn.SetWriteDeadline(time.Now().Add(writeWait))
-			if err := conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				fmt.Println(err)
-				return
-			}
 		}
 	}
 }

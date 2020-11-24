@@ -3,7 +3,6 @@ package connections
 import (
 	"log"
 
-	messages "github.com/drew138/tictac/api/websockets/messages/tictactoe"
 	"github.com/gorilla/websocket"
 )
 
@@ -16,9 +15,8 @@ type Connections struct {
 
 // ConnectedUser holds information of a connected user, as well as their websocket connection
 type ConnectedUser struct {
-	UserID    string
-	Conn      *websocket.Conn
-	SendQueue chan *messages.Message
+	UserID string
+	Conn   *websocket.Conn
 }
 
 // StartConnectionTracking starts connection workers and returns Connections struct
@@ -41,14 +39,8 @@ func (c *Connections) startConnectionsWorker() {
 			break
 		case user := <-c.Disconnect:
 			delete(c.connectedUsers, user.UserID)
-			close(user.SendQueue)
 			log.Println("Removed user", user.UserID, "from connection pool")
 			break
 		}
 	}
-}
-
-// GetConnectedUser returns the conected user
-func (c *Connections) GetConnectedUser(id string) *ConnectedUser {
-	return c.connectedUsers[id]
 }
