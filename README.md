@@ -21,3 +21,47 @@ DB_PORT=yourDatabasePort
 JWT_SECRET_KEY=randomJWTSecretKey
 JWT_REFRESH_SECRET_KEY=anotherRandomJWTSecretKey
 ```
+
+## Websocket
+
+The implemented websocket supports the following messages
+
+### Sending Private Message
+
+Sending message:
+```
+{
+  "action": "privateMessage",
+  "recipientID": "oihdfq89ewdfhsdfu80qu8943",
+  "body": "Hi, how are you?"
+}
+```
+
+Received message:
+```
+{
+  "action": "privateMessage",
+  "recipientID": "a0sg8enfdls0d72hfla0adimg",
+  "body": "Hi, how are you?"
+}
+```
+
+### Sending Game Actions
+
+Sending message:
+```
+{
+  "action": "gameAction",
+  "recipientID": "oihdfq89ewdfhsdfu80qu8943",
+  "body": "Hi, how are you?"
+}
+```
+
+Received message:
+```
+{
+  "action": "gameAction",
+  "recipientID": "a0sg8enfdls0d72hfla0adimg",
+  "body": "Hi, how are you?"
+}
+```

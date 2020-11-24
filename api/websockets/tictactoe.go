@@ -84,20 +84,20 @@ func handleMessages(user *connections.ConnectedUser, c *connections.Connections)
 		j, _ := json.Marshal(newMessage)
 		log.Println("Message Recieved: ", string(j))
 		switch newMessage.Action {
-		case "privateMessage":
-			otherUser := c.GetConnectedUser(newMessage.RoomID)
+		case "privateMessage", "gameAction":
+			otherUser := c.GetConnectedUser(newMessage.RecipientID)
 			if otherUser != nil {
 				outMsg := &messages.Message{
-					Action:      "privateMessage",
-					RecipientID: otherUser.UserID,
-					SenderID:    userID,
-					Body:        newMessage.Body,
+					Action:   newMessage.Action,
+					SenderID: userID,
+					Body:     newMessage.Body,
 				}
 				otherUser.SendQueue <- outMsg
+				user.SendQueue <- &newMessage
 			} else {
 				outMsg := &messages.Message{
 					Action: "error",
-					Body:   "User is offline",
+					Body:   "User is not connected",
 				}
 				user.SendQueue <- outMsg
 			}
