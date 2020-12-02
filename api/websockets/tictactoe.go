@@ -4,14 +4,29 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/drew138/tictac/api/websockets/connections"
-
 	messages "github.com/drew138/tictac/api/websockets/messages/tictactoe"
 	"github.com/gorilla/websocket"
+	"github.com/segmentio/ksuid"
 )
 
-// Upgrader -
+const (
+	// Time allowed to write a message to the peer.
+	writeWait = 10 * time.Second
+
+	// Time allowed to read the next pong message from the peer.
+	pongWait = 60 * time.Second
+
+	// Send pings to peer with this period. Must be less than pongWait.
+	pingPeriod = (pongWait * 9) / 10
+
+	// Maximum message size allowed from peer.
+	maxMessageSize = 512
+)
+
+// Upgrader
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
@@ -26,34 +41,40 @@ func HandleConnection(w http.ResponseWriter, r *http.Request, c *connections.Con
 		w.WriteHeader(400)
 		json.NewEncoder(w).Encode(&map[string]string{"Error": err.Error()})
 	}
-	go handleMessages(conn, c)
+	user := &connections.ConnectedUser{
+		UserID: ksuid.New().String(),
+		Conn:   conn,
+	}
+	c.Connect <- user
+	go handleMessages(user, c)
 }
 
-func handleMessages(conn *websocket.Conn, c *connections.Connections) error {
+func handleMessages(user *connections.ConnectedUser, c *connections.Connections) {
 	log.Println("Websocket connection established.")
+	// userID := user.UserID
+	conn := user.Conn
+	conn.SetReadLimit(maxMessageSize)
+	conn.SetReadDeadline(time.Now().Add(pongWait))
+	conn.SetPongHandler(func(string) error { conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	defer func() {
 		if err := conn.Close(); err != nil {
-			// TODO: Remove UserID from connection pool
 			log.Fatalln("Failed to close websocket connection: ", err.Error())
 		} else {
+			c.Disconnect <- user
 			log.Println("Websocket connection closed.")
 		}
 	}()
 	for {
 		var newMessage messages.Message
 		if err := conn.ReadJSON(&newMessage); err != nil {
-			log.Fatalln("Error when reading websocket message: ", err.Error())
-			return err
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				log.Printf("Unexpected websocket close: %v", err)
+			}
+			break
 		}
 		j, _ := json.Marshal(newMessage)
 		log.Println("Message Recieved: ", string(j))
 		switch newMessage.Action {
-		case "connect":
-			c.Connect <- newMessage.UserID
-			break
-		case "disconnect":
-			c.Disconnect <- newMessage.UserID
-			break
 		default:
 			log.Println("Unknown message recieved: ", string(j))
 			break
