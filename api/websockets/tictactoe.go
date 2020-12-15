@@ -7,8 +7,12 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
+	"github.com/drew138/tictac/api/authorization"
 	"github.com/drew138/tictac/api/websockets/connections"
 	messages "github.com/drew138/tictac/api/websockets/messages/tictactoe"
+	"github.com/drew138/tictac/database"
+	"github.com/drew138/tictac/database/models"
 	"github.com/gorilla/websocket"
 	"github.com/segmentio/ksuid"
 )
@@ -55,6 +59,24 @@ func HandleConnection(w http.ResponseWriter, r *http.Request, c *connections.Con
 	go handleMessages(user, c)
 	go sendMessagesWorker(user, c)
 	log.Println("Websocket connection established.")
+}
+
+// update user score field if they win a game
+// TODO   integrate function in handleMessages and sendMessagesWorker,
+// TODO   and jwtString in ConnectedUser struct
+func updateUserScore(jwtString string) {
+	var user models.User
+	token, err := authorization.ParseJWT(jwtString, false)
+	if err != nil {
+		fmt.Println("Error parsing JWT")
+		return
+	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if ok && token.Valid {
+		database.DBConn.First(user, claims["ID"])
+		user.Wins++
+		database.DBConn.Save(&user)
+	}
 }
 
 func handleMessages(user *connections.ConnectedUser, c *connections.Connections) {
