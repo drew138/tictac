@@ -10,4 +10,5 @@ type User struct {
 	Surname  string `json:"surname" gorm:"not null"`
 	Password string `json:"password" gorm:"not null"`
 	IsAdmin  bool   `json:"isAdmin" gorm:"default:false"`
+	Wins     int    `json:"wins" gorm:"default:0"`
 }
